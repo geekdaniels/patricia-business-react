@@ -1,160 +1,120 @@
-# TSDX React User Guide
+# Patricia Business React
 
-Congrats! You just saved yourself hours of work by bootstrapping this project with TSDX. Let’s get you oriented with what’s here and how to use it.
+The Patricia Business Checkout provides a simple and convenient way to accept payment.
 
-> This TSDX setup is meant for developing React component libraries (not apps!) that can be published to NPM. If you’re looking to build a React-based app, you should use `create-react-app`, `razzle`, `nextjs`, `gatsby`, or `react-static`.
+It enables merchants easily integrate our payment checkout on frontend applications while also giving their customers the ability to make such payments inline (i.e without leaving the merchant’s application).
 
-> If you’re new to TypeScript and React, checkout [this handy cheatsheet](https://github.com/sw-yx/react-typescript-cheatsheet/)
+It can be integrated in three easy steps.
 
-## Commands
+> 📘 Before you start
+>
+> You should create a free [Patricia Business Account](https://business.mypatricia.co/). We'll provide you with keys that you can use to make your integration.
 
-TSDX scaffolds your new library inside `/src`, and also sets up a [Parcel-based](https://parceljs.org) playground for it inside `/example`.
+### Install the checkout package
 
-The recommended workflow is to run TSDX in one terminal:
+Add the inline checkout to your website using a script tag, it is delivered through a reliable CDN.
 
-```bash
-npm start # or yarn start
+```node
+npm install patricia-checkout-react --save
 ```
 
-This builds to `/dist` and runs the project in watch mode so any edits you save inside `src` causes a rebuild to `/dist`.
+or
 
-Then run the example inside another:
-
-```bash
-cd example
-npm i # or yarn to install dependencies
-npm start # or yarn start
+```node
+yarn add patricia-checkout-react
 ```
 
-The default example imports and live reloads whatever is in `/dist`, so if you are seeing an out of date component, make sure TSDX is running in watch mode like we recommend above. **No symlinking required**, we use [Parcel's aliasing](https://parceljs.org/module_resolution.html#aliases).
+### Collect customer information
 
-To do a one-off build, use `npm run build` or `yarn build`.
+To initiate any payment transaction on the Patricia Business Checkout, you'll need to pass information such as email, first name, last name, amount, currency, etc. Here is the full list of parameters you can pass:
 
-To run tests, use `npm test` or `yarn test`.
+| Name           | Type       | Required | Description                                                                                                                                                                                    |
+| -------------- | ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| public_key     | `String`   | true     | Your public key from your Patricia Dashboard (Test / Live).                                                                                                                                    |
+| first_name     | `String`   | true     | The customer’s first name.                                                                                                                                                                     |
+| last_name      | `String`   | true     | The customer’s last name.                                                                                                                                                                      |
+| email          | `String`   | true     | The customer’s email address                                                                                                                                                                   |
+| amount         | `Number`   | true     | The amount to be charged the customer (in the fiat currency)                                                                                                                                   |
+| currency       | `String`   | true     | The fiat currency associated with the amount. The supported currencies include `"NGN"`, `"GHC"`, `"KES"`, and `"USD"`.                                                                         |
+| payment_method | `String`   | true     | The payment method can be one of `crypto_bitcoin`, `crypto_ethereum` , `crypto_tether` , `crypto_ripple` , `crypto_dogecoin` if the merchant intends to charge their client in cryptocurrency. |
+| metadata       | `Object`   | false    | Any further information about the transaction the merchant would like to store and retrieve when verifying the transaction.                                                                    |
+| onSuccess      | `Function` | false    | Action to perform after widget is successful                                                                                                                                                   |
+| onClose        | `Function` | false    | Action to perform if widget is closed                                                                                                                                                          |
+| onError        | `Function` | false    | Action to perform on widget Error                                                                                                                                                              |
 
-## Configuration
+The customer information can be retrieved from a form like in the example below:
 
-Code quality is set up for you with `prettier`, `husky`, and `lint-staged`. Adjust the respective fields in `package.json` accordingly.
+<!-- ![](https://files.readme.io/0d4329b-code.png 'code.png') -->
 
-### Jest
+> ❗️
+>
+> Never use your secret key in your frontend application.
 
-Jest tests are set up to run with `npm test` or `yarn test`.
+### Use the checkout hook
+When you have all the details needed to initiate the transaction, the next step is to tie them to the javascript function that passes them to Patricia and displays the checkout.
 
-### Bundle analysis
+```jsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { usePatriciaCheckout } from 'patricia-business-react';
 
-Calculates the real cost of your library using [size-limit](https://github.com/ai/size-limit) with `npm run size` and visulize it with `npm run analyze`.
+const CheckoutForm = () => {
+  const initiateCheckout = usePatriciaCheckout();
 
-#### Setup Files
+  const callback = {
+    onSuccess: function(data: any) {
+      console.log('transaction success =>', data);
+    },
+    onClose: function(data: any) {
+      console.log('Payment widget was closed', data);
+    },
+    onError: function(error: any) {
+      console.error('error =>', error);
+    },
+  };
 
-This is the folder structure we set up for you:
+  return (
+    <div>
+      <button
+        onClick={() =>
+          initiateCheckout({
+            public_key: '',
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'johndoe@yahoo.com',
+            amount: '1000',
+            currency: 'NGN',
+            payment_method: 'crypto_bitcoin',
+            metadata: {
+              payment_device: 'Iphone 6s',
+            },
+            ...callback,
+          })
+        }
+      >
+        Pay with Patricia
+      </button>
+    </div>
+  );
+};
 
-```txt
-/example
-  index.html
-  index.tsx       # test your component here in a demo app
-  package.json
-  tsconfig.json
-/src
-  index.tsx       # EDIT THIS
-/test
-  blah.test.tsx   # EDIT THIS
-.gitignore
-package.json
-README.md         # EDIT THIS
-tsconfig.json
+const App = () => (
+  <>
+    <CheckoutForm />
+  </>
+);
+
+ReactDOM.render(<App />, document.body);
 ```
 
-#### React Testing Library
 
-We do not set up `react-testing-library` for you yet, we welcome contributions and documentation on this.
+> 📘
+>
+> To perform a test transaction, switch to test mode in your Patricia dashboard and get the public key from settings.
 
-### Rollup
+#### Important Note
 
-TSDX uses [Rollup](https://rollupjs.org) as a bundler and generates multiple rollup configs for various module formats and build settings. See [Optimizations](#optimizations) for details.
-
-### TypeScript
-
-`tsconfig.json` is set up to interpret `dom` and `esnext` types, as well as `react` for `jsx`. Adjust according to your needs.
-
-## Continuous Integration
-
-### GitHub Actions
-
-Two actions are added by default:
-
-- `main` which installs deps w/ cache, lints, tests, and builds on all pushes against a Node and OS matrix
-- `size` which comments cost comparison of your library on every pull request using [`size-limit`](https://github.com/ai/size-limit)
-
-## Optimizations
-
-Please see the main `tsdx` [optimizations docs](https://github.com/palmerhq/tsdx#optimizations). In particular, know that you can take advantage of development-only optimizations:
-
-```js
-// ./types/index.d.ts
-declare var __DEV__: boolean;
-
-// inside your code...
-if (__DEV__) {
-  console.log('foo');
-}
-```
-
-You can also choose to install and use [invariant](https://github.com/palmerhq/tsdx#invariant) and [warning](https://github.com/palmerhq/tsdx#warning) functions.
-
-## Module Formats
-
-CJS, ESModules, and UMD module formats are supported.
-
-The appropriate paths are configured in `package.json` and `dist/index.js` accordingly. Please report if any issues are found.
-
-## Deploying the Example Playground
-
-The Playground is just a simple [Parcel](https://parceljs.org) app, you can deploy it anywhere you would normally deploy that. Here are some guidelines for **manually** deploying with the Netlify CLI (`npm i -g netlify-cli`):
-
-```bash
-cd example # if not already in the example folder
-npm run build # builds to dist
-netlify deploy # deploy the dist folder
-```
-
-Alternatively, if you already have a git repo connected, you can set up continuous deployment with Netlify:
-
-```bash
-netlify init
-# build command: yarn build && cd example && yarn && yarn build
-# directory to deploy: example/dist
-# pick yes for netlify.toml
-```
-
-## Named Exports
-
-Per Palmer Group guidelines, [always use named exports.](https://github.com/palmerhq/typescript#exports) Code split inside your React app instead of your React library.
-
-## Including Styles
-
-There are many ways to ship styles, including with CSS-in-JS. TSDX has no opinion on this, configure how you like.
-
-For vanilla CSS, you can include it at the root directory and add it to the `files` section in your `package.json`, so that it can be imported separately by your users and run through their bundler's loader.
-
-## Publishing to NPM
-
-We recommend using [np](https://github.com/sindresorhus/np).
-
-## Usage with Lerna
-
-When creating a new package with TSDX within a project set up with Lerna, you might encounter a `Cannot resolve dependency` error when trying to run the `example` project. To fix that you will need to make changes to the `package.json` file _inside the `example` directory_.
-
-The problem is that due to the nature of how dependencies are installed in Lerna projects, the aliases in the example project's `package.json` might not point to the right place, as those dependencies might have been installed in the root of your Lerna project.
-
-Change the `alias` to point to where those packages are actually installed. This depends on the directory structure of your Lerna project, so the actual path might be different from the diff below.
-
-```diff
-   "alias": {
--    "react": "../node_modules/react",
--    "react-dom": "../node_modules/react-dom"
-+    "react": "../../../node_modules/react",
-+    "react-dom": "../../../node_modules/react-dom"
-   },
-```
-
-An alternative to fixing this problem would be to remove aliases altogether and define the dependencies referenced as aliases as dev dependencies instead. [However, that might cause other problems.](https://github.com/palmerhq/tsdx/issues/64)
+1. The `public_key` field here takes your Patricia public_key which can be found in the dashboard.
+2. The `onSuccess` method is called when the transaction is successful.
+3. The `onClose` method is called if the user closes the modal without completing payment.
+4. The `onError` method is called if an error occurs.
