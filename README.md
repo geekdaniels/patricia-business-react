@@ -6,6 +6,9 @@ It enables merchants easily integrate our payment checkout on frontend applicati
 
 <!-- <img src="https://media.giphy.com/media/5oJl2JisUuDfc49CJF/giphy.gif" width="800"/> -->
 
+https://user-images.githubusercontent.com/17318050/197339464-4bb95703-3d9d-4fbf-8be7-e54f9256b0a4.mov
+
+
 It can be integrated in three easy steps.
 
 > 📘 Before you start
