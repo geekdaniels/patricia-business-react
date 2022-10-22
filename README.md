@@ -4,6 +4,8 @@ The Patricia Business Checkout provides a simple and convenient way to accept pa
 
 It enables merchants easily integrate our payment checkout on frontend applications while also giving their customers the ability to make such payments inline (i.e without leaving the merchant’s application).
 
+<!-- <img src="https://media.giphy.com/media/5oJl2JisUuDfc49CJF/giphy.gif" width="800"/> -->
+
 It can be integrated in three easy steps.
 
 > 📘 Before you start
@@ -15,13 +17,13 @@ It can be integrated in three easy steps.
 Add the inline checkout to your website using a script tag, it is delivered through a reliable CDN.
 
 ```node
-npm install patricia-checkout-react --save
+npm install patricia-business-react --save
 ```
 
 or
 
 ```node
-yarn add patricia-checkout-react
+yarn add patricia-business-react
 ```
 
 ### Collect customer information
